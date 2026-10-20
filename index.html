@@ -67,6 +67,12 @@
                 </div>
             </div>
             <div class="menu-block">
+                <div class="menu-label">Export</div>
+                <div id="export-png-button" class="generic-button simple-button">PNG</div>
+                <div id="export-svg-button" class="generic-button simple-button">SVG</div>
+                <div id="export-json-button" class="generic-button simple-button">JSON (.drakon)</div>
+            </div>
+            <div class="menu-block">
                 <div class="menu-label">Color theme</div>
                 <select id="themes-combobox" class="main-menu-combobox"></select>
             </div>
@@ -98,6 +104,8 @@
 
     </div>
     <script src="libs/drakonwidget.js"></script>
+    <script src="libs/canvas2svg.js"></script>
+    <script src="export/drakon-export.js"></script>
     <script src="validation/drakon-validator.js"></script>
     <script src="validation/rules/structure-rules.js"></script>
     <script src="validation/rules/content-rules.js"></script>

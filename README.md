@@ -10,6 +10,10 @@ DrakonWidget is a JavaScript widget for viewing and editing drakon flowcharts.
 
 The optional `validation/` folder adds a pluggable DRAKON rules validator: an engine, rule packs, an editable config (rules can be changed without code), and an issue panel with Report/Strict modes. It does not change `libs/drakonwidget.js`. See [validation/README.md](validation/README.md). Run the tests with `npm test`.
 
+## Export to PNG, SVG and JSON (optional module)
+
+`export/drakon-export.js` saves the current diagram as PNG, SVG or a `.drakon` JSON file. In the demo: menu → Export. See [export/README.md](export/README.md).
+
 ## Online demo:
 
 https://stepan-mitkin.github.io/drakonwidget/
