@@ -3,6 +3,8 @@
     var widgets
     var drakon
     var currentMode = "write"
+    var validator
+    var validation
     function main() {
         widgets = createSimpleWidgets()
         widgets.init(tr)
@@ -14,6 +16,7 @@
             localStorage.setItem("drakon-widget-version", currentVersion)
         }
 
+        initValidation()
         initToolbar()
         loadDiagrams()
         loadThemes()
@@ -922,7 +925,7 @@
 
     function openDiagram(currentDiagram) {
         renderEditorWidget()
-        var sender = createEditSender()
+        var sender = validation.wrapEditSender(createEditSender())
         var diagramStr = localStorage.getItem(currentDiagram)
         var diagram = JSON.parse(diagramStr)
         if (currentMode === "write") {
@@ -936,7 +939,9 @@
             diagram,
             sender,
             false
-        )
+        ).then(function () {
+            validation.validateNow()
+        })
 
         localStorage.setItem("current-diagram", currentDiagram)
     }
@@ -944,6 +949,97 @@
     function onResize() {
         renderEditorWidget()
         drakon.redraw()
+    }
+
+    var VALIDATION_CONFIG_KEY = "drakon-validation-config"
+    var VALIDATION_MODE_KEY = "drakon-validation-mode"
+
+    function loadValidationConfig() {
+        var stored = localStorage.getItem(VALIDATION_CONFIG_KEY)
+        if (stored) {
+            try {
+                return JSON.parse(stored)
+            } catch (ex) {
+                console.warn("Ignoring broken validation config", ex)
+            }
+        }
+        return DrakonValidator.defaultConfig
+    }
+
+    function initValidation() {
+        validator = DrakonValidator.createValidator(loadValidationConfig())
+        validation = DrakonValidationUI.create({
+            validator: validator,
+            getWidget: function () { return drakon },
+            mount: get("main"),
+            mode: localStorage.getItem(VALIDATION_MODE_KEY) || "report",
+            onModeChanged: function (mode) { localStorage.setItem(VALIDATION_MODE_KEY, mode) },
+            onEditRules: editValidationRules
+        })
+    }
+
+    // Shows every rule with its current settings, so all knobs are visible.
+    // "description" is informational only; the engine ignores it in overrides.
+    function buildEditableValidationConfig() {
+        var config = validator.getConfig()
+        var customIds = config.custom.map(function (rule) { return rule.id })
+        var rules = {}
+        validator.listRules().forEach(function (rule) {
+            if (customIds.indexOf(rule.id) !== -1) { return }
+            var entry = {
+                description: rule.description,
+                enabled: rule.enabled,
+                severity: rule.severity
+            }
+            if (rule.blocking !== null) {
+                entry.blocking = rule.blocking
+            }
+            if (Object.keys(rule.options).length) {
+                entry.options = rule.options
+            }
+            rules[rule.id] = entry
+        })
+        return { rules: rules, custom: config.custom }
+    }
+
+    function checkValidationConfigText(text) {
+        if (!text.trim()) {
+            return undefined
+        }
+        try {
+            DrakonValidator.createValidator(JSON.parse(text))
+        } catch (ex) {
+            // largeBox keeps the dialog open on error but does not display
+            // the message itself, so show it as a snack.
+            var message = "Error in validation rules: " + ex.message
+            widgets.showErrorSnack(message)
+            return message
+        }
+        return undefined
+    }
+
+    async function editValidationRules(evt) {
+        var beautiful = JSON.stringify(buildEditableValidationConfig(), null, 4)
+        var newContent = await widgets.largeBox(
+            evt.clientX,
+            evt.clientY,
+            "Validation rules (clear the text to restore defaults)",
+            beautiful,
+            checkValidationConfigText
+        )
+        if (newContent === undefined) {
+            return
+        }
+        var newConfig
+        if (newContent.trim()) {
+            newConfig = JSON.parse(newContent)
+            localStorage.setItem(VALIDATION_CONFIG_KEY, JSON.stringify(newConfig))
+        } else {
+            newConfig = DrakonValidator.defaultConfig
+            localStorage.removeItem(VALIDATION_CONFIG_KEY)
+        }
+        validator = DrakonValidator.createValidator(newConfig)
+        validation.setValidator(validator)
     }
 
     function initDrakonWidget() {
