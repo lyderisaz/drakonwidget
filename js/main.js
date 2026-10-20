@@ -28,6 +28,9 @@
         registerClick("duplicate-diagram-button", duplicateDiagram)
 
         registerClick("set-diagram-json-button", setDiagramJson)
+        registerClick("export-png-button", function () { exportDiagram("png") })
+        registerClick("export-svg-button", function () { exportDiagram("svg") })
+        registerClick("export-json-button", function () { exportDiagram("json") })
         registerClick("set-theme-json-button", setThemeJson)
         registerClick("reset-all-diagrams-button", resetAllDiagrams)
 
@@ -1080,6 +1083,15 @@
         }
         validator = DrakonValidator.createValidator(newConfig)
         validation.setValidator(validator)
+    }
+
+    function exportDiagram(format) {
+        closeMenu()
+        // The theme config makes the export look like the editor.
+        DrakonExport.saveAs(drakon, format, { config: buildConfig(), scale: 2 })
+            .catch(function (err) {
+                widgets.showErrorSnack("Export failed: " + err.message)
+            })
     }
 
     function initDrakonWidget() {
