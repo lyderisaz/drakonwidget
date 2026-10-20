@@ -12,6 +12,8 @@
  * canvasIcons: true and paints it with the widget's exportToContext().
  *
  * SVG needs libs/canvas2svg.js (MIT, Gliffy Inc.), loaded before this file.
+ * The SVG carries the diagram JSON in <metadata id="drakon-json"> (turn off
+ * with { embedJson: false }); import/drakon-import.js reads it back.
  * PNG needs nothing extra. Nothing in the diagram is changed.
  */
 (function (root) {
@@ -128,6 +130,14 @@
             var svg = ctx.getSvg();
             svg.setAttribute("viewBox", "0 0 " + size.width + " " + size.height);
             svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+            if (options.embedJson !== false) {
+                // The diagram travels inside the picture, so DrakonImport can
+                // turn this SVG back into an editable diagram.
+                var meta = svg.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "metadata");
+                meta.setAttribute("id", "drakon-json");
+                meta.textContent = widget.exportJson();
+                svg.insertBefore(meta, svg.firstChild);
+            }
             var text = new XMLSerializer().serializeToString(svg);
             return '<?xml version="1.0" encoding="UTF-8"?>\n' + text;
         });

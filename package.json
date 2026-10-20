@@ -4,7 +4,7 @@
   "description": "A JavaScript widget for viewing and editing drakon flowcharts",
   "main": "index.js",
   "scripts": {
-    "test": "node --test test/validation.test.js"
+    "test": "node --test test/validation.test.js test/import.test.js"
   },
   "repository": {
     "type": "git",

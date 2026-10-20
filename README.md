@@ -14,6 +14,12 @@ The optional `validation/` folder adds a pluggable DRAKON rules validator: an en
 
 `export/drakon-export.js` saves the current diagram as PNG, SVG or a `.drakon` JSON file. In the demo: menu → Export. See [export/README.md](export/README.md).
 
+## Import from .drakon, JSON or SVG (optional module)
+
+`import/drakon-import.js` opens a `.drakon` / `.json` file, or an SVG exported by
+`export/drakon-export.js` (the SVG carries the diagram JSON in its metadata). In the
+demo: menu → Import, or drop the file on the page. See [import/README.md](import/README.md).
+
 ## Online demo:
 
 https://stepan-mitkin.github.io/drakonwidget/
