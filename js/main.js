@@ -34,6 +34,18 @@
         registerChange("diagrams-combobox", onDiagramsChanged)
         registerChange("themes-combobox", onThemesChanged)
         registerChange("modes-combobox", onModesChanged)
+        registerChange("validation-mode-combobox", onValidationModeChanged)
+        registerClick("validation-rules-button", function (evt) {
+            closeMenu()
+            editValidationRules(evt)
+        })
+        registerClick("validation-help-button", function () {
+            closeMenu()
+            if (validation.getMode() === "off") {
+                validation.setMode("report")
+            }
+            validation.setHelpOpen(true)
+        })
 
         initShortcuts()
         var currentDiagram = localStorage.getItem("current-diagram")
@@ -337,6 +349,7 @@
         fillDiagrams(diagrams)
         fillModes(modes)
         fillThemes(themes)
+        fillValidationModes()
         menu.style.display = "inline-block"
     }
 
@@ -953,6 +966,28 @@
 
     var VALIDATION_CONFIG_KEY = "drakon-validation-config"
     var VALIDATION_MODE_KEY = "drakon-validation-mode"
+    var VALIDATION_HELP_SEEN_KEY = "drakon-validation-help-seen"
+
+    function fillValidationModes() {
+        var combo = get("validation-mode-combobox")
+        combo.innerHTML = ""
+        DrakonValidationUI.modes.forEach(function (mode) {
+            addOption(combo, mode.id, mode.label)
+        })
+        combo.value = validation.getMode()
+        showValidationModeHint()
+    }
+
+    function showValidationModeHint() {
+        var current = validation.getMode()
+        var mode = DrakonValidationUI.modes.find(function (m) { return m.id === current })
+        get("validation-mode-hint").textContent = mode ? mode.hint : ""
+    }
+
+    function onValidationModeChanged() {
+        validation.setMode(get("validation-mode-combobox").value)
+        showValidationModeHint()
+    }
 
     function loadValidationConfig() {
         var stored = localStorage.getItem(VALIDATION_CONFIG_KEY)
@@ -974,6 +1009,11 @@
             mount: get("main"),
             mode: localStorage.getItem(VALIDATION_MODE_KEY) || "report",
             onModeChanged: function (mode) { localStorage.setItem(VALIDATION_MODE_KEY, mode) },
+            // Explain the panel once, on the first visit.
+            helpOpen: !localStorage.getItem(VALIDATION_HELP_SEEN_KEY),
+            onHelpToggled: function (open) {
+                if (!open) { localStorage.setItem(VALIDATION_HELP_SEEN_KEY, "1") }
+            },
             onEditRules: editValidationRules
         })
     }

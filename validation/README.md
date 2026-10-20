@@ -42,25 +42,37 @@ var validation = DrakonValidationUI.create({
     validator: validator,
     getWidget: function () { return drakon },
     mount: document.body,
-    mode: "report"                  // or "strict"
+    mode: "report"                  // "report" | "strict" | "off"
 })
 
 drakon.setDiagram(id, diagram, validation.wrapEditSender(mySender), false)
     .then(function () { validation.validateNow() })
 ```
 
-- **Report** mode re-validates after each edit and lists issues. Clicking an
-  issue scrolls the canvas to the item.
-- **Strict** mode undoes any edit that adds new *blocking* issues. By default
-  blocking = severity `error` from the `structure` pack. Set `"blocking": true`
-  (or `false`) on any rule in the config to change that.
+The panel sits in the **top-right corner**:
+
+- **Mode: Report** re-validates after each edit and lists issues. Nothing is
+  blocked or saved; click an issue to scroll the canvas to the item.
+- **Mode: Strict** also undoes any edit that adds new *blocking* issues. By
+  default blocking = severity `error` from the `structure` pack. Set
+  `"blocking": true` (or `false`) on any rule in the config to change that.
+- **Off** (`mode: "off"` or `ui.setMode("off")`) skips validation and hides the panel.
+- **?** opens a short explanation and a **Copy issues** button that puts the
+  current list on the clipboard as text. Results are shown only in the panel.
+- **▴ / ▾** collapses the panel to one line.
 
 The panel never writes styles into the diagram, so highlighting is not saved
-with the document.
+with the document. `DrakonValidationUI.modes` lists the modes with labels and
+one-line hints, for use in your own menus.
 
-In the demo (`index.html`) the panel's **Rules…** button opens the full rule
-set as JSON. Changes are checked before saving, stored in `localStorage`
-(`drakon-validation-config`), and clearing the text restores the defaults.
+In the demo (`index.html`):
+
+- the main menu has a **Validation** section: mode (Report / Strict / Off) with
+  an explanation, **Edit rules...** and **How it works**;
+- the explanation opens automatically on the first visit;
+- **Rules…** / **Edit rules...** opens the full rule set as JSON. Changes are
+  checked before saving, stored in `localStorage` (`drakon-validation-config`),
+  and clearing the text restores the defaults.
 
 ## Using it without the widget (Node, CI, server)
 
