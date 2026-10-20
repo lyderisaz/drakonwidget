@@ -31,6 +31,8 @@
         registerClick("export-png-button", function () { exportDiagram("png") })
         registerClick("export-svg-button", function () { exportDiagram("svg") })
         registerClick("export-json-button", function () { exportDiagram("json") })
+        registerClick("import-file-button", importFromPicker)
+        initDropImport()
         registerClick("set-theme-json-button", setThemeJson)
         registerClick("reset-all-diagrams-button", resetAllDiagrams)
 
@@ -1083,6 +1085,56 @@
         }
         validator = DrakonValidator.createValidator(newConfig)
         validation.setValidator(validator)
+    }
+
+    function importFromPicker() {
+        closeMenu()
+        DrakonImport.pickFile().then(function (file) {
+            if (file) { importFile(file) }
+        })
+    }
+
+    // Drop a .drakon / .json / .svg file anywhere on the page to import it.
+    function initDropImport() {
+        window.addEventListener("dragover", function (evt) {
+            if (evt.dataTransfer && Array.prototype.indexOf.call(evt.dataTransfer.types, "Files") !== -1) {
+                evt.preventDefault()
+                evt.dataTransfer.dropEffect = "copy"
+            }
+        })
+        window.addEventListener("drop", function (evt) {
+            var files = evt.dataTransfer && evt.dataTransfer.files
+            if (files && files.length) {
+                evt.preventDefault()
+                importFile(files[0])
+            }
+        })
+    }
+
+    function importFile(file) {
+        var imported
+        DrakonImport.readFile(file).then(function (result) {
+            imported = result
+            return DrakonImport.checkRender(result.diagram)
+        }).then(function () {
+            var diagram = imported.diagram
+            var list = getDiagramList()
+            var names = getDiagramObjects().diagrams.map(function (d) { return d.name })
+            var name = diagram.name
+            var n = 2
+            while (names.indexOf(name) !== -1) {
+                name = diagram.name + " (" + n + ")"
+                n++
+            }
+            diagram.name = name
+            var id = generateId(list)
+            list.push(id)
+            localStorage.setItem("diagram-list", JSON.stringify(list))
+            localStorage.setItem(id, JSON.stringify(diagram))
+            openDiagram(id)
+        }).catch(function (err) {
+            widgets.showErrorSnack("Import failed: " + err.message)
+        })
     }
 
     function exportDiagram(format) {

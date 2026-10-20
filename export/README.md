@@ -29,6 +29,7 @@ Options:
 | `scale` | `2` | PNG pixel scale (2 = sharp on high-DPI screens). Large diagrams are scaled down to stay within 16000 px |
 | `background` | none | Extra background color painted first (the theme background is drawn anyway) |
 | `createWidget` | `createDrakonWidget` | Factory for the hidden export widget |
+| `embedJson` | `true` | SVG only: put the diagram JSON into `<metadata id="drakon-json">`, so the SVG can be imported back (`import/drakon-import.js`) |
 
 How it works: with the usual `canvasIcons: false` the widget draws text as
 HTML, so its own canvas holds only shapes. The exporter loads the same diagram
