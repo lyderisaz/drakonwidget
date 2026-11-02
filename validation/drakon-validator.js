@@ -485,6 +485,45 @@
         }
     });
 
+    registerKind("mentions", {
+        description: "At least `min` items (of the listed types) must mention the pattern somewhere in the diagram.",
+        options: { field: "content", pattern: "", flags: "i", min: 1, message: "" },
+        build: function (rule) {
+            return function (ctx, o, report) {
+                if (ctx.isEmpty) { return; }
+                var field = o.field || "content";
+                var re = new RegExp(o.pattern, o.flags === undefined ? "i" : o.flags);
+                var min = o.min === undefined || o.min === null ? 1 : o.min;
+                var n = 0;
+                eachTarget(ctx, rule, function (id, it) {
+                    if (re.test(ctx.text(it, field))) { n++; }
+                });
+                if (n < min) {
+                    report(null, format(o.message || "Diagram should mention {pattern} at least {min} time(s), found {n}",
+                        { pattern: o.pattern, min: min, n: n }));
+                }
+            };
+        }
+    });
+
+    registerKind("diagramField", {
+        description: "A diagram-level field (name, params, description) must match the pattern.",
+        options: { field: "params", pattern: "", flags: "i", message: "" },
+        build: function () {
+            return function (ctx, o, report) {
+                if (ctx.isEmpty) { return; }
+                var field = o.field || "params";
+                var value = ctx.diagram[field] === undefined || ctx.diagram[field] === null
+                    ? "" : String(ctx.diagram[field]).trim();
+                var re = new RegExp(o.pattern, o.flags === undefined ? "i" : o.flags);
+                if (!re.test(value)) {
+                    report(null, format(o.message || "Diagram {field} should match {pattern}",
+                        { field: field, pattern: o.pattern }));
+                }
+            };
+        }
+    });
+
     function escapeRe(s) {
         return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     }

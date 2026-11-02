@@ -126,8 +126,12 @@ Declarative kinds:
 | `forbiddenWords` | `words`, `caseSensitive`, `field`, `message` | a listed whole word appears |
 | `unique` | `field`, `caseSensitive`, `message` | two items have the same non-empty value |
 | `typeCount` | `type`, `min`, `max`, `message` | count of `type` items is outside `[min, max]` |
+| `mentions` | `pattern`, `flags` (default `i`), `min` (default 1), `field`, `message` | fewer than `min` items (of `types`) mention the pattern |
+| `diagramField` | `field` (`params`, `name`, `description`), `pattern`, `flags`, `message` | the diagram-level field does not match |
 
-Messages accept placeholders: `{type}`, `{value}`, `{max}`, `{length}`, `{word}`, `{other}`, `{n}`, `{pattern}`.
+Messages accept placeholders: `{type}`, `{value}`, `{max}`, `{length}`, `{word}`, `{other}`, `{n}`, `{min}`, `{field}`, `{pattern}`.
+
+With these kinds a whole domain rule pack (for example procedures for a management standard) can be plain JSON, pasted into the Rules editor, with no code.
 
 ### At runtime (JavaScript)
 

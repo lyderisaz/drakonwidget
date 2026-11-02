@@ -247,3 +247,23 @@ test("a crashing rule becomes a warning instead of breaking validation", () => {
 test("DRAKON rules are skipped for other diagram types", () => {
     assert.deepEqual(run({ type: "graf", items: { "1": { type: "idea" } } }).issues, []);
 });
+
+test("mentions and diagramField kinds", () => {
+    const d = base();
+    d.params = "Kodas: P-07\nVersija: 1.0";
+    const custom = [
+        { id: "m-ok", kind: "mentions", options: { pattern: "done" } },
+        { id: "m-miss", kind: "mentions", options: { pattern: "record", message: "no record" } },
+        { id: "m-two", kind: "mentions", types: ["action"], options: { pattern: "do", min: 2 } },
+        { id: "f-ok", kind: "diagramField", options: { pattern: "kodas\\s*:" } },
+        { id: "f-miss", kind: "diagramField", options: { pattern: "patvirtino\\s*:" } }
+    ];
+    const ids = ruleIds(run(d, { custom }));
+    assert.ok(!ids.includes("m-ok"));
+    assert.ok(ids.includes("m-miss"));
+    assert.ok(ids.includes("m-two"));
+    assert.ok(!ids.includes("f-ok"));
+    assert.ok(ids.includes("f-miss"));
+    // empty diagrams are not judged
+    assert.deepEqual(run({ items: {} }, { custom }).issues, []);
+});
